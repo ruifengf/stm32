@@ -1,0 +1,16 @@
+.\objects\iwdg.o: ..\HARDWARE\iwdg.c
+.\objects\iwdg.o: ..\HARDWARE\iwdg.h
+.\objects\iwdg.o: ..\FWLIB\inc\stm32f4xx_iwdg.h
+.\objects\iwdg.o: ..\FWLIB\inc\stm32f4xx.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\ARM\CMSIS\4.2.0\CMSIS\Include\core_cm4.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmInstr.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmFunc.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\ARM\CMSIS\4.2.0\CMSIS\Include\core_cmSimd.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\Keil\STM32F4xx_DFP\1.0.8\Device\Include\system_stm32f4xx.h
+.\objects\iwdg.o: C:\Keil_v5\ARM\Pack\Keil\STM32F4xx_DFP\1.0.8\Device\StdPeriph_Driver\templates\stm32f4xx_conf.h
+.\objects\iwdg.o: e:\Workspace\STM32\stm32vet407\demo\USER\RTE\RTE_Components.h
+.\objects\iwdg.o: ..\FWLIB\inc\stm32f4xx_rcc.h
+.\objects\iwdg.o: ..\FWLIB\inc\stm32f4xx.h
+.\objects\iwdg.o: ..\FWLIB\inc\stm32f4xx_syscfg.h
+.\objects\iwdg.o: ..\FWLIB\inc\misc.h
