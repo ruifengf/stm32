@@ -1,0 +1,11 @@
+#忽略以下格式文件
+*.json
+*.log
+*.log.lock
+*.lst
+*.map
+*.crf
+*.d
+*.o
+*.axf
+*.htm

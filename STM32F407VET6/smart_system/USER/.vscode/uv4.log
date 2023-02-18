@@ -1,10 +1,10 @@
 Build target 'smart_system'
 compiling main.c...
-main.c(244): warning:  #177-D: variable "err" was declared but never referenced
+main.c(243): warning:  #177-D: variable "err" was declared but never referenced
         OS_ERR err;
-main.c(245): warning:  #177-D: variable "buf" was declared but never referenced
+main.c(244): warning:  #177-D: variable "buf" was declared but never referenced
         uint8_t *buf = NULL;
-main.c(336): warning:  #177-D: variable "err" was declared but never referenced
+main.c(335): warning:  #177-D: variable "err" was declared but never referenced
         OS_ERR err;
 main.c: 3 warnings, 0 errors
 assembling startup_stm32f40_41xxx.s...
