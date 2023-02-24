@@ -1,15 +1,10 @@
-//单片机头文件
 #include "stm32f4xx.h"
-
-//网络设备驱动
 #include "esp8266.h"
 
-//硬件驱动
 #include "delay.h"
 #include "usart.h"
 #include "led.h"
 
-//C库
 #include <string.h>
 #include <stdio.h>
 
@@ -21,17 +16,13 @@ unsigned char esp8266_sys_buf[128];
 unsigned short esp8266_sys_cnt = 0, esp8266_sys_cntPre = 0;
 
 
-//==========================================================
-//	函数名称：	ESP8266_Clear
-//
-//	函数功能：	清空缓存
-//
-//	入口参数：	无
-//
-//	返回参数：	无
-//
-//	说明：		
-//==========================================================
+/*
+**********************************
+*                                *
+*                                *
+*                                *
+**********************************
+*/
 void ESP8266__Sys__Clear(void)
 {
 
@@ -40,50 +31,33 @@ void ESP8266__Sys__Clear(void)
 }
 
 //==========================================================
-//	函数名称：	ESP8266_WaitRecive
 //
-//	函数功能：	等待接收完成
-//
-//	入口参数：	无
-//
-//	返回参数：	REV_OK-接收完成		REV_WAIT-接收超时未完成
-//
-//	说明：		循环调用检测是否接收完成
 //==========================================================
 _Bool ESP8266_Sys_WaitRecive(void)
 {
 
-	if(esp8266_sys_cnt == 0) 							//如果接收计数为0 则说明没有处于接收数据中，所以直接跳出，结束函数
+	if(esp8266_sys_cnt == 0) 							//如果接收计数为0 则说明没有处于接收数据中??所以直接跳出??结束函数
 		return REV_WAIT;
 		
-	if(esp8266_sys_cnt == esp8266_sys_cntPre)				//如果上一次的值和这次相同，则说明接收完毕
+	if(esp8266_sys_cnt == esp8266_sys_cntPre)				//如果上一次的值和这次?嗤???则说明接收完毕
 	{
 		esp8266_sys_cnt = 0;							//清0接收计数
 			
 		return REV_OK;								//返回接收完成标志
 	}
 		
-	esp8266_sys_cntPre = esp8266_sys_cnt;					//置为相同
+	esp8266_sys_cntPre = esp8266_sys_cnt;					//置为?嗤?
 	
 	return REV_WAIT;								//返回接收未完成标志
 
 }
 
 //==========================================================
-//	函数名称：	ESP8266_SendCmd
-//
-//	函数功能：	发送命令
-//
-//	入口参数：	cmd：命令
-//				res：需要检查的返回指令
-//
-//	返回参数：	0-成功	1-失败
-//
-//	说明：		
+//	
 //==========================================================
 _Bool ESP8266_Sys_SendCmd(char *cmd, char *res, u16 time)
 {	
-	Usart3_SendString((unsigned char *)cmd, strlen((const char *)cmd));
+	Usart1_SendString((unsigned char *)cmd, strlen((const char *)cmd));
 
 	while(time--)
 	{
@@ -105,16 +79,7 @@ _Bool ESP8266_Sys_SendCmd(char *cmd, char *res, u16 time)
 }
 
 //==========================================================
-//	函数名称：	ESP8266_SendData
-//
-//	函数功能：	发送数据
-//
-//	入口参数：	data：数据
-//				len：长度
-//
-//	返回参数：	无
-//
-//	说明：		
+//	
 //==========================================================
 void ESP8266_Sys_SendData(unsigned char *data, unsigned short len)
 {
@@ -130,10 +95,6 @@ void ESP8266_Sys_SendData(unsigned char *data, unsigned short len)
 
 }
 
-
-
-//WIFI写死在程序中
-//ONENET官方例程用的方式
 void WIFI_CWJAP(void)
 {
 	
@@ -151,8 +112,8 @@ void WIFI_CWJAP(void)
 	printf("CWJAP\r\n");
 	while(ESP8266_SendCmd(ESP8266_WIFI_INFO, "GOT IP", 200))
 		delay_ms(500);
-AT+CIPMUX=1
-AT+CIPSERVER=1
+	AT+CIPMUX=1
+	AT+CIPSERVER=1
 	
 	printf("CIPSTART\r\n");
 	while(ESP8266_SendCmd(ESP8266_ONENET_INFO, "CONNECT", 200))
@@ -163,15 +124,7 @@ AT+CIPSERVER=1
 
 
 //==========================================================
-//	函数名称：	ESP8266_Init
-//
-//	函数功能：	初始化ESP8266
-//
-//	入口参数：	无
-//
-//	返回参数：	无
-//
-//	说明：		
+//	
 //==========================================================
 void ESP8266_Init(void)
 {
@@ -201,15 +154,7 @@ void ESP8266_Init(void)
 
 
 //==========================================================
-//	函数名称：	USART1_IRQHandler
-//
-//	函数功能：	串口3收发中断
-//
-//	入口参数：	无
-//
-//	返回参数：	无
-//
-//	说明：		
+//		
 //==========================================================
 void USART1_IRQHandler(void)
 {
@@ -226,17 +171,17 @@ void USART1_IRQHandler(void)
 
 /*
 ************************************************************
-*	函数名称：	Usart_SendString
+*	函数名称??	Usart_SendString
 *
-*	函数功能：	串口数据发送
+*	函数功能??	串口数据发送
 *
-*	入口参数：	USARTx：串口组
-*				str：要发送的数据
-*				len：数据长度
+*	入口参数??	USARTx?捍?口组
+*				str?阂?发送的数据
+*				len?菏?据长度
 *
-*	返回参数：	无
+*	返回参数??	无
 *
-*	说明：		
+*	说明??		
 ************************************************************
 */
 void Usart1_SendString(unsigned char *str, unsigned short len)

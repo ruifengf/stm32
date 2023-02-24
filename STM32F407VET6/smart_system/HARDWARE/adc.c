@@ -71,25 +71,6 @@ void Dac_Init(void)
 	PAin(4) = 0;
 }
 
-void filter()
-{
-    U32  index;
-    U8   loop_1,loop_2;
-    U16  Voltage_buffer[SAMPLE_TIMES];
-
-
-    for(index = 0;index < SAMPLE_TIMES; index++)
-    {
-        Voltage_buffer[index] = Get_Adc();
-    }
-
-    for(loop_1 = 0;loop_1 < SAMPLE_TIMES; loop_1++)
-    {
-
-    }
-
-
-}
 
 static U16 Get_Adc(void)
 {

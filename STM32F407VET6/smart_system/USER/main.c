@@ -240,8 +240,6 @@ void Task_Init(void *parg)
 
 void Task_Debug(void *parg)
 {
-	OS_ERR err;
-	uint8_t *buf = NULL;
 	Debug_Printf("Task_Debug is create ok\r\n");
 	while(1)
 	{
@@ -332,7 +330,6 @@ void Task_Button(void *parg)
 
 void Task_W25Q16(void *parg)
 {
-	OS_ERR err;
 	U8 data_1[256];
 	U8 data_2[256];
 	U16 index;
@@ -371,20 +368,20 @@ void Task_ESP8266(void *parg)
 	
 	OS_MSG_SIZE msg_size=0;
 	
-	char *p;
+	char *onenet_data;
 	
 	printf("Task_ESP8266 is create ok\r\n");
 
 	while(1)
 	{
-		p=OSQPend(&g_queue_usart2,0,OS_OPT_PEND_BLOCKING,&msg_size,NULL,&err);
+		onenet_data = OSQPend(&g_queue_usart2,0,OS_OPT_PEND_BLOCKING,&msg_size,NULL,&err);
 		
-		if(p)
+		if(onenet_data)
 		{
-			printf("%s\r\n",p);
+			printf("%s\r\n",onenet_data);
 			
-			//?????o3???
-			memset(p,0,msg_size);
+			//
+			memset(onenet_data,0,msg_size);
 		
 		}
 		

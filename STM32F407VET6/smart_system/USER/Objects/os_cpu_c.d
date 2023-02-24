@@ -24,7 +24,7 @@
 .\objects\os_cpu_c.o: ..\UCOSIII\uCOS_CONFIG\app_cfg.h
 .\objects\os_cpu_c.o: ..\UCOSIII\UCOS_BSP\bsp.h
 .\objects\os_cpu_c.o: C:\Keil_v5\ARM\Pack\Keil\STM32F4xx_DFP\1.0.8\Device\StdPeriph_Driver\templates\stm32f4xx_conf.h
-.\objects\os_cpu_c.o: e:\Workspace\stm32\STM32F407VET6\smart_system\USER\RTE\RTE_Components.h
+.\objects\os_cpu_c.o: E:\Workspace\stm32\STM32F407VET6\smart_system\USER\RTE\RTE_Components.h
 .\objects\os_cpu_c.o: ..\FWLIB\inc\stm32f4xx_rcc.h
 .\objects\os_cpu_c.o: ..\FWLIB\inc\stm32f4xx.h
 .\objects\os_cpu_c.o: C:\Keil_v5\ARM\Pack\ARM\CMSIS\4.2.0\CMSIS\Include\core_cm4.h

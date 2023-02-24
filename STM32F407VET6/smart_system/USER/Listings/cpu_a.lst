@@ -449,7 +449,7 @@ ARM Macro Assembler    Page 7
   282 00000034         
   283 00000034                 END
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp --apcs=int
-erwork --depend=.\objects\cpu_a.d -o.\objects\cpu_a.o -Ie:\Workspace\stm32\STM3
+erwork --depend=.\objects\cpu_a.d -o.\objects\cpu_a.o -IE:\Workspace\stm32\STM3
 2F407VET6\smart_system\USER\RTE -IC:\Keil_v5\ARM\PACK\Keil\STM32F4xx_DFP\1.0.8\
 Device\Include -IC:\Keil_v5\ARM\CMSIS\Include --predefine="__EVAL SETA 1" --pre
 define="__UVISION_VERSION SETA 514" --predefine="STM32F40_41xxx SETA 1" --list=
