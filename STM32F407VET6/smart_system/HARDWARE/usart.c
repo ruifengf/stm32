@@ -1,4 +1,3 @@
-#pragma import(__use_no_semihosting_swi)
 #include <stdio.h>
 #include "usart.h"
 #include "led.h"
@@ -22,11 +21,26 @@ char alarm_data[30];
 U8 alarm_set_event;
 extern OS_Q    g_queue_usart2;
 static volatile U8 usart2_data_index = 0;
-static volatile char usart2_data[30];
+static volatile char usart2_data[128];
+extern unsigned char esp8266_buf[128];
 
 extern OS_Q    g_queue_usart1;
 static volatile U8 usart1_data_index = 0;
 static volatile char usart1_data[30];
+
+extern OS_MUTEX  g_printf_mutex;
+static U8 usart2_complete = 0;
+
+
+U8 Get_Send_Count(void)
+{
+	return usart2_data_index;
+}
+
+U8 Set_Send_Count(void)
+{
+	usart2_data_index = 0;
+}
 
 
 void Usart1_Init(u32 BaudRate)
@@ -141,17 +155,16 @@ void USART1_IRQHandler(void)
 
 }    
 void USART2_IRQHandler(void)
-{   
-	uint8_t usart2_complete = 0;
-	OS_ERR       err;
-	//进入中断
-	OSIntEnter(); 
+{  
+	//OS_ERR       err;
+	OSIntEnter();
     if (SET == USART_GetITStatus(USART2, USART_IT_RXNE))
     {
-		usart2_data[usart2_data_index] = USART_ReceiveData(USART2);
-        if('#' == usart2_data[usart2_data_index] || 30 == usart2_data_index)
+		esp8266_buf[usart2_data_index] = USART_ReceiveData(USART2);
+		//Debug_Printf("%c", esp8266_buf[usart2_data_index]);
+        if(127 == usart2_data_index)
         {
-            usart2_complete = 1;            
+            usart2_data_index = 0; 
         }
         else
         {
@@ -159,18 +172,10 @@ void USART2_IRQHandler(void)
         }
         while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET); 
 
-		// USART_SendData(USART2, data);
         USART_ClearITPendingBit(USART2, USART_IT_RXNE);
     }
-	if(usart2_complete)
-	{
-		OSQPost(&g_queue_usart2, (void*)&usart2_data[0], usart2_data_index, OS_OPT_POST_FIFO, &err);
-		usart2_complete = 0;
-		usart2_data_index = 0;
-	}
+	//OSQPost(&g_queue_usart2, (void*)&usart2_data[0], usart2_data_index, OS_OPT_POST_FIFO, &err);
 	OSIntExit();
-
-
 }
 
 void Send_Str(const char* str)
@@ -181,8 +186,34 @@ void Send_Str(const char* str)
 		while( USART_GetFlagStatus(USART1, USART_FLAG_TC) == RESET);	
         USART_SendData(USART1, *p);			
 		p++;
-	    //USART_ClearFlag(USART2,USART_FLAG_TC);
+	    USART_ClearFlag(USART2,USART_FLAG_TC);
 	}
 }
 
+/*
+************************************************************
+*	函数名称??	Usart_SendString
+*
+*	函数功能??	串口数据发送
+*
+*	入口参数??	USARTx?捍?口组
+*				str?阂?发送的数据
+*				len?菏?据长度
+*
+*	返回参数??	无
+*
+*	说明??		
+************************************************************
+*/
+void Usart2_SendString(unsigned char *str)
+{	
+	while(*str != '\0')
+	{	
+       // USART2->SR &= (uint16_t)~USART_FLAG_TC; //对发送标志位进行清零		
+		USART_SendData(USART2, *str);
+		while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
+		str++;
+		
+	}
 
+}

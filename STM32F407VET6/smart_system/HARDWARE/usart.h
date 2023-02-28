@@ -20,5 +20,11 @@
 void Usart1_Init(u32 BaudRate);
 void Usart2_Init(u32 BaudRate);
 void Send_Str(const char* str);
+void Usart1_SendString(unsigned char *str, unsigned short len);
 
+
+
+U8 Get_Send_Count(void);
+
+U8 Set_Send_Count(void);
 #endif

@@ -61,3 +61,4 @@
 .\objects\main.o: ..\UCOSIII\UCOS_BSP\bsp.h
 .\objects\main.o: ..\Hardware\oled.h
 .\objects\main.o: ..\Hardware\bmp.h
+.\objects\main.o: ..\Hardware\esp8266_cilent.h

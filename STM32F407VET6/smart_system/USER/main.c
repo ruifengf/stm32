@@ -12,6 +12,7 @@
 #include "delay.h"
 #include "oled.h"
 #include "bmp.h"
+#include "esp8266_cilent.h"
 
 //Interrupt Flag Group
 OS_FLAG_GRP  g_flag_group;
@@ -59,6 +60,8 @@ CPU_STK task_w25q26_stk[256];
 OS_TCB task_esp8266_tcb;				
 void Task_ESP8266(void *parg);			
 CPU_STK task_esp8266_stk[256];
+
+extern unsigned char esp8266_buf[128];
 
 //Task_Timer
 void Task_Timer(void *p_tmr, void *p_arg);
@@ -278,7 +281,7 @@ void Task_Dht11(void *parg)
 		}
 		else
 		{
-			Debug_Printf("dht11 read error code %d\r\n",rt);		
+			//Debug_Printf("dht11 read error code %d\r\n",rt);		
 		}
 		OSTimeDly(2000,OS_OPT_TIME_PERIODIC,&err);
 	}
@@ -365,32 +368,33 @@ void Task_W25Q16(void *parg)
 void Task_ESP8266(void *parg)
 {
 	OS_ERR err;
+	U8 return_symbol;
+		
+	char *onenet_data = "AT\r\n";
 	
-	OS_MSG_SIZE msg_size=0;
+	Debug_Printf("Task_ESP8266 is create ok\r\n");
+	ESP8266_Init();
+
+	return_symbol = 1;
+	while(1 == return_symbol)
+	{
+		return_symbol = ESP8266_SendCmd("AT\r\n", "OK", 400, &err);
+	}
+		
 	
-	char *onenet_data;
-	
-	printf("Task_ESP8266 is create ok\r\n");
+	Delay_ms(500);
+
+	WIFI_CWJAP(&err);
 
 	while(1)
-	{
-		onenet_data = OSQPend(&g_queue_usart2,0,OS_OPT_PEND_BLOCKING,&msg_size,NULL,&err);
-		
-		if(onenet_data)
-		{
-			printf("%s\r\n",onenet_data);
-			
-			//
-			memset(onenet_data,0,msg_size);
-		
-		}
-		
-		//printf("task1 is running ...\r\n");
+	{	
 
 	}
 
 		
 }
+
+
 
 void Task_Timer(void *p_tmr, void *p_arg)
 {

@@ -84,20 +84,18 @@ _Bool ESP8266_WaitRecive(void)
 //
 //	说明：		
 //==========================================================
-_Bool ESP8266_SendCmd(char *cmd, char *res, u16 time)
+_Bool ESP8266_SendCmd(char *cmd, char *res, u16 time, OS_ERR *p_err)
 {	
 	Usart2_SendString((unsigned char *)cmd, strlen((const char *)cmd));
 
 	while(time--)
 	{
-		if(ESP8266_WaitRecive() == REV_OK)							//如果收到数据
+		esp_data = OSQPend(&g_queue_usart2,0,OS_OPT_PEND_BLOCKING,&msg_size,NULL,&p_err);
+		if(strstr((const char *)esp8266_buf, res) != NULL)		//如果检索到关键词
 		{
-			if(strstr((const char *)esp8266_buf, res) != NULL)		//如果检索到关键词
-			{
-				ESP8266_Clear();									//清空缓存
+			ESP8266_Clear();									//清空缓存
 				
-				return 0;
-			}
+			return 0;
 		}
 		
 		delay_ms(10);
@@ -182,7 +180,7 @@ unsigned char *ESP8266_GetIPD(unsigned short timeOut)
 
 //WIFI写死在程序中
 //ONENET官方例程用的方式
-void WIFI_CWJAP(void)
+void WIFI_CWJAP(OS_ERR *p_err)
 {	
 	//printf("CWMODE\r\n");
 	while(ESP8266_SendCmd("AT+CWMODE=1\r\n", "OK", 200))

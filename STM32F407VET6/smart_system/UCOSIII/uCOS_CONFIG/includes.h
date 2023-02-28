@@ -88,6 +88,8 @@
 
 #define DEBUG_PRINTF_EN	1
 
+void Debug_Printf(const char *format, ...);
+
 
 
 

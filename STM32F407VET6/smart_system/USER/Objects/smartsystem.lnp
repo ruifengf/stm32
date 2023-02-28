@@ -34,6 +34,7 @@
 ".\objects\usart.o"
 ".\objects\usb_ttl.o"
 ".\objects\oled.o"
+".\objects\esp8266_cilent.o"
 ".\objects\bsp.o"
 ".\objects\cpu_core.o"
 ".\objects\cpu_c.o"
