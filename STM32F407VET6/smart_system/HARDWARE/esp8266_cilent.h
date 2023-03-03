@@ -22,13 +22,13 @@ void ESP8266_Init(void);
 void ESP8266_Clear(void);
 
 U8 Send_Complete(void);
-U8 ESP8266_SendCmd(char *cmd, char *res, u16 time, OS_ERR *p_err);
+U8 ESP8266_SendCmd(char *cmd, char *res, u16 time);
 
 void ESP8266_SendData(unsigned char *data, unsigned short len);
 
 U8 *ESP8266_GetIPD(unsigned short timeOut);
 void Usart2_SendString(unsigned char *str, unsigned short len);
-void WIFI_CWJAP(OS_ERR *p_err);
+void WIFI_CWJAP(void);
 
 
 #endif

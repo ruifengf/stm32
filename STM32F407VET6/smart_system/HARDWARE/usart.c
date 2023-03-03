@@ -37,7 +37,7 @@ U8 Get_Send_Count(void)
 	return usart2_data_index;
 }
 
-U8 Set_Send_Count(void)
+void Set_Send_Count(void)
 {
 	usart2_data_index = 0;
 }
@@ -156,12 +156,12 @@ void USART1_IRQHandler(void)
 }    
 void USART2_IRQHandler(void)
 {  
-	//OS_ERR       err;
-	OSIntEnter();
+	OS_ERR       err;
+	OSIntEnter();	
     if (SET == USART_GetITStatus(USART2, USART_IT_RXNE))
     {
 		esp8266_buf[usart2_data_index] = USART_ReceiveData(USART2);
-		//Debug_Printf("%c", esp8266_buf[usart2_data_index]);
+		Debug_Printf("%c", esp8266_buf[usart2_data_index]);
         if(127 == usart2_data_index)
         {
             usart2_data_index = 0; 
@@ -176,6 +176,7 @@ void USART2_IRQHandler(void)
     }
 	//OSQPost(&g_queue_usart2, (void*)&usart2_data[0], usart2_data_index, OS_OPT_POST_FIFO, &err);
 	OSIntExit();
+
 }
 
 void Send_Str(const char* str)
@@ -205,15 +206,15 @@ void Send_Str(const char* str)
 *	说明??		
 ************************************************************
 */
-void Usart2_SendString(unsigned char *str)
+void Usart2_SendString(unsigned char *str, unsigned short len)
 {	
-	while(*str != '\0')
+	while(len != 0)
 	{	
        // USART2->SR &= (uint16_t)~USART_FLAG_TC; //对发送标志位进行清零		
 		USART_SendData(USART2, *str);
 		while(USART_GetFlagStatus(USART2, USART_FLAG_TXE) == RESET);
 		str++;
-		
+		len--;		
 	}
 
 }

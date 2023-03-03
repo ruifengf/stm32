@@ -1,24 +1,33 @@
 #include "led.h"
 #include "button.h"
-#include "tim.h"
-#include "usart.h"
+#include "flash.h"
 #include "ultrasound.h"
 #include "blue_tooth.h"
-#include "dht11.h"
+
+#include "usart.h"
 #include "rtc.h"
-#include "flash.h"
+
 #include "adc.h"
+#include "dht11.h"
+#include "tim.h"
+
 #include "includes.h"
 #include "delay.h"
+
 #include "oled.h"
 #include "bmp.h"
+
+#include "onenet.h"
 #include "esp8266_cilent.h"
 
+extern U8 led_flag;
 //Interrupt Flag Group
 OS_FLAG_GRP  g_flag_group;
 
 //Semaphore
 OS_SEM  g_dht11_sem;
+OS_SEM  g_led_sem;
+
 
 //Message Queue
 OS_Q    g_queue_usart2;
@@ -60,6 +69,13 @@ CPU_STK task_w25q26_stk[256];
 OS_TCB task_esp8266_tcb;				
 void Task_ESP8266(void *parg);			
 CPU_STK task_esp8266_stk[256];
+
+//LED Task
+OS_TCB task_led_tcb;				
+void Task_Led(void *parg);			
+CPU_STK task_led_stk[256];
+
+extern U8 light_control;
 
 extern unsigned char esp8266_buf[128];
 
@@ -132,13 +148,14 @@ void Task_Init(void *parg)
 
 	//Hardware Init
 	LED_Init();         												
-	Button_Init();
+	//Button_Init();
 	Dht11_Init();
 	W25Q16_Init();
 	OLED_Init();
 	
 	//Semaphore Create
 	OSSemCreate(&g_dht11_sem, "dht11_finish", 0, &err);
+	OSSemCreate(&g_led_sem, "led_control", 0, &err);
 	
 	//Mutex Semphore Create
 	OSMutexCreate(&g_printf_mutex, "print_mutex", &err);
@@ -185,7 +202,7 @@ void Task_Init(void *parg)
 					OS_OPT_TASK_NONE,						
 					&err									
 				);
-				
+		
 	//Button Task Create			
 	OSTaskCreate(	&task_button_tcb,							
 					"Task_Button",							
@@ -201,7 +218,7 @@ void Task_Init(void *parg)
 					OS_OPT_TASK_NONE,						
 					&err									
 				);
-				
+
 	//W25Q16 Task Create			
 	OSTaskCreate(	&task_w25q16_tcb,							
 					"Task_W25Q16",							
@@ -222,7 +239,7 @@ void Task_Init(void *parg)
 					"Task_ESP8266",							
 					Task_ESP8266,							
 					0,										
-					4,										
+					5,										
 					task_esp8266_stk,								
 					256/10,									
 					256,									
@@ -231,7 +248,22 @@ void Task_Init(void *parg)
 					0,										
 					OS_OPT_TASK_NONE,						
 					&err									
-				);			
+				);	
+	//LED Task Create			
+	OSTaskCreate(	&task_led_tcb,							
+					"Task_Led",							
+					Task_Led,							
+					0,										
+					4,										
+					task_led_stk,								
+					256/10,									
+					256,									
+					0,										
+					0,																					
+					0,										
+					OS_OPT_TASK_NONE,						
+					&err									
+				);
 	//OS Timer Start																													
 	OSTmrStart(&g_timer, &err);
 
@@ -368,33 +400,76 @@ void Task_W25Q16(void *parg)
 void Task_ESP8266(void *parg)
 {
 	OS_ERR err;
-	U8 return_symbol;
-		
-	char *onenet_data = "AT\r\n";
+	U32 time_count;	
+	U8 *onenet_data_ptr = NULL;
+	
 	
 	Debug_Printf("Task_ESP8266 is create ok\r\n");
 	ESP8266_Init();
 
-	return_symbol = 1;
-	while(1 == return_symbol)
-	{
-		return_symbol = ESP8266_SendCmd("AT\r\n", "OK", 400, &err);
-	}
-		
-	
-	Delay_ms(500);
-
-	WIFI_CWJAP(&err);
 
 	while(1)
 	{	
+		
+		Delay_ms(10);
+		if(time_count == 300)
+		{
+			OneNet_SendData();	//·¢ËÍÊý¾Ý 
+			ESP8266_Clear();
+			Debug_Printf("send data data\r\n");
+		}
 
+
+		onenet_data_ptr = ESP8266_GetIPD(4);
+		//
+		if(onenet_data_ptr != NULL)
+		{
+			
+			OneNet_RevPro(onenet_data_ptr);
+		}
+		else
+		{
+			//Debug_Printf("ptrIPD not found\r\n");
+		}
+		ESP8266_Clear();
+		time_count++;
 	}
 
 		
 }
 
+void Task_Led(void *parg)
+{
+	OS_ERR err;
 
+	Debug_Printf("Task_Led is create ok\r\n"); 
+	while(1)
+	{
+		if(1 == led_flag)
+		{
+			//Debug_Printf("hello\r\n"); 
+			if(light_control == 1)
+			{
+				LED_D2 = 0;
+				LED_D3 = 0;
+			}
+			else if(light_control == 0)
+			{
+				LED_D2 = 1;
+				LED_D3 = 1;	
+			}
+			led_flag = 0;
+			OSSemPost(&g_led_sem,OS_OPT_POST_1, &err);
+		}
+	
+		Delay_ms(1000);
+	}
+
+
+
+	
+	
+}
 
 void Task_Timer(void *p_tmr, void *p_arg)
 {

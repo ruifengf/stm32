@@ -2,7 +2,7 @@
 #include "stm32f4xx.h"
 
 //网络设备
-#include "esp8266.h"
+#include "esp8266_cilent.h"
 
 //协议文件
 #include "onenet.h"
@@ -12,9 +12,7 @@
 #include "usart.h"
 #include "led.h"
 #include "delay.h"
-#include "fan.h"
-#include "humidifier.h"
-#include "heater.h"
+
 //C库
 #include <string.h>
 #include <stdio.h>
@@ -27,7 +25,13 @@
 #define DEVID		"716233397"  //设备ID
 
 extern unsigned char esp8266_buf[128];
+extern float value_light; 	    //检测到的光照度
 
+
+extern U8 light_control = 0;				//下发的开关灯命令
+extern OS_SEM  g_led_sem;
+
+U8 led_flag = 0;
 //==========================================================
 //	函数名称：	OneNet_DevLink
 //
@@ -72,109 +76,34 @@ _Bool OneNet_DevLink(void)
 					default:printf("ERR:	连接失败：未知错误\r\n");break;
 				}
 			}
+			else
+			{
+				Debug_Printf("不是连接请求数据包\r\n");
+			}
+		}
+		else
+		{
+			Debug_Printf("dataptr is null\r\n");
 		}
 		
 		MQTT_DeleteBuffer(&mqttPacket);								//删包
 	}
 	else
-		printf("WARN:	MQTT_PacketConnect Failed\r\n");
+		Debug_Printf("WARN:	MQTT_PacketConnect Failed\r\n");
 	
 	return status;
 	
 }
-extern float value_light; 	    //检测到的光照度
-extern float value_temperature; //检测到的温度
-extern float value_humidity; 	  //检测到的湿度
-extern float value_CO2; 	      //检测到的CO2浓度
 
-u8 LED_Light;				//下发的小灯亮度
-u8 SmartOrManual = 1;				//智能调光模式
 
-u8 light_control = 0;				//下发的开关灯命令
-u8 heater_control = 0;				//下发的开关加热器命令
-u8 humidifier_control = 0;				//下发的开关加湿器命令
-u8 fan_control = 0;				//下发的开关风扇命令
-u8 intelligent_mode = 0;				//智能模式
-
-u8 loop = 0;
 
 unsigned char OneNet_FillBuf(char *buf)
 {
-	char text[32];
-	
-	if (loop == 2)
-	{
-		 value_CO2 = value_CO2 + 22.0;
-		 value_light = value_light + 3.0;
-	   value_temperature = value_temperature + 1.0;
-	   value_humidity = value_humidity + 1.0;
-	}
-	
-	if (loop == 5)
-	{
-		 value_CO2 = value_CO2 + 15.0;
-		 value_light = value_light + 2.0;
-	   value_temperature = value_temperature + 1.0;
-	   value_humidity = value_humidity + 1.0;
-	}
-	
-	if (loop == 4)
-	{
-		 value_CO2 = value_CO2 - 17.0;
-		 value_light = value_light - 2.0;
-	   value_temperature = value_temperature - 1.0;
-	   value_humidity = value_humidity - 1.0;
-	}
-	
-  if (loop == 7)
-	{
-		 value_CO2 = value_CO2 - 21.0;
-		 value_light = value_light - 3.0;
-	   value_temperature = value_temperature - 1.0;
-	   value_humidity = value_humidity - 1.0;
-		loop = 0;
-	}
-	loop++;
-	memset(text, 0, sizeof(text));
-	
-	strcpy(buf, ",;");
-		
-	memset(text, 0, sizeof(text));
-	sprintf(text, "temperature,%lf;", value_temperature);
-	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "humidity,%lf;", value_humidity);
-	strcat(buf, text);
-		
-	memset(text, 0, sizeof(text));
-	sprintf(text, "CO2,%.1f;", value_CO2);
-	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "light,%.1f;", value_light);
-	strcat(buf, text);
-	
+	char text[32];	
 	memset(text, 0, sizeof(text));
 	sprintf(text, "light_control,%d;", light_control);
 	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "heater_control,%d;", heater_control);
-	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "humidifier_control,%d;", humidifier_control);
-	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "fan_control,%d;", fan_control);
-	strcat(buf, text);
-	
-	memset(text, 0, sizeof(text));
-	sprintf(text, "intelligent_mode,%d;", intelligent_mode);
-	strcat(buf, text);
-	
+	Debug_Printf("light_control = %d\r\n", light_control);
 	return strlen(buf);
 }
 
@@ -197,7 +126,6 @@ void OneNet_SendData(void)
 	
 	short body_len = 0, i = 0;
 	
-//	printf("Tips:	OneNet_SendData-MQTT\r\n");
 	
 	memset(buf, 0, sizeof(buf));
 	
@@ -211,7 +139,6 @@ void OneNet_SendData(void)
 				mqttPacket._data[mqttPacket._len++] = buf[i];
 			
 			ESP8266_SendData(mqttPacket._data, mqttPacket._len);									//上传数据到平台
-//			printf("Send %d Bytes\r\n", mqttPacket._len);
 			
 			MQTT_DeleteBuffer(&mqttPacket);															//删包
 		}
@@ -234,6 +161,7 @@ void OneNet_SendData(void)
 //==========================================================
 void OneNet_RevPro(unsigned char *cmd)
 {
+	OS_ERR err;
 	
 	MQTT_PACKET_STRUCTURE mqttPacket = {NULL, 0, 0, 0};								//协议包
 	
@@ -289,7 +217,7 @@ void OneNet_RevPro(unsigned char *cmd)
 		return;
 	
 	dataPtr = strchr(req_payload, ':');					//搜索'}'
-
+	
 	if(dataPtr != NULL && result != -1)					//如果找到了
 	{
 		dataPtr++;
@@ -302,32 +230,20 @@ void OneNet_RevPro(unsigned char *cmd)
 		
 		num = atoi((const char *)numBuf);				//转为数值形式
 		
-		if(strstr((char *)req_payload, "heater"))		//搜索"LED_Light"
+	    if(strstr((char *)req_payload, "light"))
 		{
-			  heater_control = num;
-				heater_switch(heater_control);
+			  light_control = num;		
+              led_flag = 1;		
+			  Debug_Printf("nn%d\r\n", light_control);			
+			  OSSemPend (&g_led_sem, 0, OS_OPT_PEND_BLOCKING, NULL, &err);
+			  //OSSemPost(&g_led_sem,OS_OPT_POST_1, &err);
+			  	
 		}
-		else if(strstr((char *)req_payload, "humidifier"))
+		else
 		{
-			  humidifier_control = num;
-				humidifier_switch(humidifier_control);
+			 	
 		}
-		else if(strstr((char *)req_payload, "fan"))
-		{
-				fan_control = num;
-				fan_switch(fan_control);
-		}
-		else if(strstr((char *)req_payload, "light"))
-		{
-			  light_control = num;
-			  light_switch(light_control);
-		}
-		else if(strstr((char *)req_payload, "intelligent_mode"))
-		{
-			  intelligent_mode = num;
-				printf("intelligent_mode = %d\r\n", num);
-		}
-		//delay_ms(4000);
+
 	}
 
 	if(type == MQTT_PKT_CMD || type == MQTT_PKT_PUBLISH)
